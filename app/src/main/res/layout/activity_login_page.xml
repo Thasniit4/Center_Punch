@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/layoutLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/top_green_background"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="200dp"
+                android:src="@drawable/login" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="20dp"
+                android:text="Welcome Back"
+                android:textColor="@color/black"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:paddingTop="80dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutLogin">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tvUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                app:boxBackgroundColor="@android:color/transparent"
+                app:boxBackgroundMode="none"
+                app:boxStrokeWidth="0dp"
+                app:counterMaxLength="6"
+                app:hintEnabled="false"
+                app:hintTextColor="@color/black"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/user"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginRight="20dp"
+                    android:background="@drawable/cus_edittext"
+                    android:drawablePadding="12dp"
+                    android:hint="Username"
+                    android:maxLength="8"
+                    android:maxLines="1"
+                    android:minHeight="35dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:singleLine="true"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/gray"
+                    app:boxBackgroundColor="@android:color/transparent"
+                    app:counterEnabled="true"
+                    app:counterMaxLength="8" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tvPassWord"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/transparent"
+                app:boxBackgroundColor="@android:color/transparent"
+                app:boxBackgroundMode="none"
+                app:boxStrokeWidth="0dp"
+                app:hintEnabled="false"
+                app:hintTextAppearance="@color/LightBlue"
+                app:hintTextColor="@color/LightBlue"
+                app:layout_constraintEnd_toEndOf="@+id/tvUsername"
+                app:layout_constraintStart_toStartOf="@+id/tvUsername"
+                app:layout_constraintTop_toBottomOf="@+id/tvUsername"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/lite_red">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/pass"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/user"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginRight="20dp"
+                    android:background="@drawable/cus_edittext"
+                    android:drawablePadding="12dp"
+                    android:hint="Password"
+                    android:inputType="textPassword"
+                    android:minHeight="35dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/gray"
+                    app:boxBackgroundColor="@android:color/transparent" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/submit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="30dp"
+                android:background="@drawable/cus_btm"
+                android:paddingHorizontal="50dp"
+                android:paddingVertical="10dp"
+                android:text="login"
+                android:textColor="@color/black"
+                app:backgroundTint="@color/lite_red"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/tvPassWord"
+                app:layout_constraintStart_toStartOf="@+id/tvPassWord"
+                app:layout_constraintTop_toBottomOf="@+id/tvPassWord"
+                app:layout_goneMarginTop="30dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:paddingTop="20dp"
+            android:text="©2025 Asirvad Internal IT Team. All rights reserved."
+            android:textColor="@color/black"
+            android:textSize="10sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="Version 1.8"
+            android:textColor="@color/black"
+            android:textSize="10sp"
+            android:paddingTop="20dp"
+            app:layout_constraintEnd_toEndOf="@+id/textView"
+            app:layout_constraintStart_toStartOf="@+id/textView"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
