@@ -3,6 +3,8 @@ package com.example.centerpunch.Network;
 
 import com.example.centerpunch.LoginApi.LoginRequest;
 import com.example.centerpunch.LoginApi.LoginResponse;
+import com.example.centerpunch.LoginApi.PhotoExistRequest;
+import com.example.centerpunch.LoginApi.PhotoExistResponse;
 import com.example.centerpunch.PhotoVerificationApi.PhotoVerificationRequest;
 import com.example.centerpunch.PhotoVerificationApi.PhotoVerificationResponse;
 import com.example.centerpunch.PhotoVerificationCompleteApi.VerificationCompleteRequest;
@@ -31,6 +33,9 @@ public interface ApiInterface {
 
     @POST("liveness-secure/getData")
     Call<VerificationCompleteResponse> verifyPhotoCompletion(@Body VerificationCompleteRequest verificationCompleteRequest);
+
+    @POST("api/ImageUpload/getImageUploadDatas")
+    Call<PhotoExistResponse> checkingPhotoExist(@Body PhotoExistRequest photoExistRequest);
 
 
 }

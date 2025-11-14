@@ -21,6 +21,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.example.centerpunch.LoginApi.PhotoExistRequest;
+import com.example.centerpunch.LoginApi.PhotoExistResponse;
 import com.example.centerpunch.Network.ApiInterface;
 import com.example.centerpunch.BaseMethod.BaseActivity;
 import com.example.centerpunch.BaseMethod.utility;
@@ -32,6 +34,7 @@ import com.example.centerpunch.PunchApi.PunchResponse;
 import com.example.centerpunch.PunchApi.RetrofitClient;
 import com.example.centerpunch.R;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.gson.Gson;
 
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -42,16 +45,21 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
     EditText user, pass;
     Button submit;
     int empcode;
+    String pEmpCode;
+
     String key = "7x!A%D*G-KaPdSgV";
     String iv = "7x!A%D*G-KaPdSgV";
     String empname, todate, branchid;
     boolean isAllFieldsChecked = false;
     PunchResponse punchResponse;
+    PhotoExistResponse photoExistResponse;
 
     private AlertDialog loaderDialog;
 
     NetWorkCheck netWorkCheck;
     private AlertDialog noInternetDialog;
+
+    String imageUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,6 +224,8 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
     }
 
 
+
+
     private void getUser(String userid) {
 
        showLoader("Logging In Please Wait ...");
@@ -247,7 +257,9 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                     if (Alert != null && Alert.equals("NOT")) {
                         Toast.makeText(LoginPage.this, "A new version of the application is available. Please update to the latest version for a better experience.", Toast.LENGTH_LONG).show();
                     } else if (PostId.equals("16") || PostId.equals("32")) {
-                        GetDbData(userid);
+
+                      userPhotoExist();
+                      //  GetDbData(userid);
 
                     } else if (PostId.equals("179") || PostId.equals("103") || PostId.equals("12") || PostId.equals("139")) {
                         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -320,6 +332,57 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
             }
         });
     }
+
+
+    private void userPhotoExist() {
+
+        showLoader("Logging In Please Wait ...");
+
+        String userid = sharedPreferences.getString("EmpCode", null);
+        Log.d("checkEmpcode", "Emp Code = " + userid);
+
+        PhotoExistRequest photoExistRequest = new PhotoExistRequest();
+        photoExistRequest.setpEmpCode(userid);
+
+        Log.d("API_REQUEST", new Gson().toJson(photoExistRequest));
+
+        Call<PhotoExistResponse> call = RetrofitClient.getInstance().getMyApi().checkingPhotoExist(photoExistRequest);
+
+        call.enqueue(new Callback<PhotoExistResponse>() {
+            @Override
+            public void onResponse(Call<PhotoExistResponse> call, Response<PhotoExistResponse> response) {
+                hideLoader();
+
+                Log.d("FULL_API_RESPONSE", new Gson().toJson(response.body()));
+
+                photoExistResponse = response.body();
+
+                if (photoExistResponse != null) {
+
+                    imageUrl = photoExistResponse.getImageUrl();
+                    Log.d("imageUrl", "imageUrl = " + imageUrl);
+
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+
+                        startActivity(new Intent(LoginPage.this, DashBoardActivity.class));
+
+                        // show toast...
+                    } else {
+                        startActivity(new Intent(LoginPage.this, DbImageComparison.class));
+                    }
+
+                } else {
+                    Toast.makeText(LoginPage.this, "No Images Available, take a new photo", LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PhotoExistResponse> call, Throwable throwable) {
+                hideLoader();
+            }
+        });
+    }
+
 
     private void GetDbData(String EmpCode) {
       showLoader("Logging In");

@@ -970,9 +970,6 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         });
     }
 
-
-
-
     private void photoVerify() {
         showLoader("Checking photos");
         PhotoVerificationRequest photoVerificationRequest = new PhotoVerificationRequest();

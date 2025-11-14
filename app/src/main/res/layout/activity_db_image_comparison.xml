@@ -8,9 +8,10 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:background="@color/white"
         android:paddingTop="?attr/actionBarSize"
+        android:backgroundTint="@color/lite_red"
         tools:ignore="MissingConstraints">
 
         <!-- Card container for main content -->
@@ -19,8 +20,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="5dp"
             app:cardUseCompatPadding="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -43,8 +44,11 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="16dp"
                     android:text="PHOTO PUNCH"
+                    android:padding="10dp"
+                    android:elevation="5dp"
                     android:textColor="@color/black"
-                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
                     />
 
                 <!-- Image / Camera section -->
