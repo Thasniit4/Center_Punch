@@ -66,7 +66,8 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
         WebView.setWebContentsDebuggingEnabled(true);
         NetWorkCheck.setNetworkChangeListener(this);
         NetWorkCheck.registerNetworkCallback(this);
-        if (!NetWorkCheck.isInternetAvailable(this)) {
+
+        if (!NetWorkCheck.isInternetAvailable()) {
             showNoInternetDialog();
         }
         String backCamera=getIntent().getStringExtra("flipCamera");
@@ -300,8 +301,9 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Always clear the listener when the activity is destroyed
+
         NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
     }
 
 

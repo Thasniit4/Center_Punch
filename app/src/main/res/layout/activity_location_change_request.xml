@@ -7,17 +7,62 @@
     tools:context=".View.Location_Change_Request"
     android:orientation="vertical">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/firstLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/cus_bgd">
+
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="6dp"
+            android:src="@drawable/outline_arrow_back_24"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/tvDashBoard"
+            android:layout_marginStart="15dp" />
+
+
+
+        <TextView
+            android:id="@+id/tvHeading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="Location Modification Request"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/profileImg"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/map"
+            android:padding="10dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/circle_bg"
+            app:layout_constraintTop_toBottomOf="@+id/tvHeading"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <LinearLayout
         android:id="@+id/linear"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/white"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="10dp">
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -42,6 +87,7 @@
                         android:text="Location Modification Request"
                         android:textSize="22sp"
                         android:textStyle="bold"
+                        android:visibility="gone"
                         android:textColor="@color/black"
                         android:layout_gravity="center_horizontal"/>
 
@@ -51,12 +97,13 @@
                         android:layout_height="wrap_content"
                         android:text="Employee Code"
                         android:textColor="@color/black"
+                        android:layout_marginTop="10dp"
                         android:layout_marginLeft="20dp"
                         android:layout_marginRight="20dp"/>
 
                     <EditText
                         android:id="@+id/EmpCode"
-                        android:textColor="@color/LightBlue"
+                        android:textColor="@color/black"
                         android:enabled="false"
                         android:layout_width="match_parent"
                         android:layout_height="35dp"
@@ -64,6 +111,7 @@
                         android:paddingStart="10dp"
                         android:layout_marginLeft="20dp"
                         android:layout_marginRight="20dp"
+                        android:layout_marginTop="5dp"
                         android:background="@drawable/stroke_curved_box" />
 
                     <TextView
@@ -81,7 +129,7 @@
 
                     <EditText
                         android:id="@+id/EmpName"
-                        android:textColor="@color/LightBlue"
+                        android:textColor="@color/black"
                         android:enabled="false"
                         android:layout_width="match_parent"
                         android:layout_height="35dp"
@@ -105,7 +153,7 @@
 
                     <EditText
                         android:id="@+id/BranchId"
-                        android:textColor="@color/LightBlue"
+                        android:textColor="@color/black"
                         android:enabled="false"
                         android:textSize="17sp"
                         android:layout_width="match_parent"
@@ -128,7 +176,7 @@
                         android:layout_marginRight="20dp" />
                     <EditText
                         android:id="@+id/CenterName"
-                        android:textColor="@color/LightBlue"
+                        android:textColor="@color/black"
                         android:enabled="false"
                         android:textSize="17sp"
                         android:layout_width="match_parent"
@@ -167,7 +215,7 @@
                                 android:textSize="17sp"
                                 android:layout_width="match_parent"
                                 android:layout_height="35dp"
-                                android:textColor="@color/LightBlue"
+                                android:textColor="@color/black"
                                 android:background="@drawable/stroke_curved_box"
                                 android:paddingStart="10dp"
                                 android:gravity="center"
@@ -190,7 +238,7 @@
 
                             <EditText
                                 android:id="@+id/CurLong"
-                                android:textColor="@color/LightBlue"
+                                android:textColor="@color/black"
                                 android:enabled="false"
                                 android:layout_width="match_parent"
                                 android:layout_height="35dp"
@@ -228,7 +276,7 @@
                                 android:textSize="17sp"
                                 android:layout_width="match_parent"
                                 android:layout_height="35dp"
-                                android:textColor="@color/LightBlue"
+                                android:textColor="@color/black"
                                 android:background="@drawable/stroke_curved_box"
                                 android:paddingStart="10dp"
                                 android:gravity="center"
@@ -251,7 +299,7 @@
 
                             <EditText
                                 android:id="@+id/OldLong"
-                                android:textColor="@color/LightBlue"
+                                android:textColor="@color/black"
                                 android:enabled="false"
                                 android:layout_width="match_parent"
                                 android:layout_height="35dp"
@@ -273,7 +321,7 @@
                         android:layout_marginRight="20dp" />
                     <EditText
                         android:id="@+id/CurPlace"
-                        android:textColor="@color/LightBlue"
+                        android:textColor="@color/black"
                         android:enabled="false"
                         android:textSize="17sp"
                         android:layout_width="match_parent"
@@ -301,17 +349,23 @@
                             android:gravity="center"
                             android:paddingEnd="10dp">
 
-                            <Button
+                            <TextView
                                 android:id="@+id/request"
-                                android:layout_width="130dp"
-                                android:layout_height="50dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
                                 android:text="REQUEST"
                                 android:layout_marginTop="8dp"
-                                android:paddingHorizontal="20dp"
-                                android:paddingVertical="10dp"
-                                android:textSize="14sp"
+                                android:padding="20dp"
+                                android:elevation="5dp"
+                                android:gravity="center"
                                 android:textColor="@color/white"
-                                app:backgroundTint="@color/LightBlue"/>
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:layout_marginLeft="20dp"
+                                android:layout_marginRight="20dp"
+                                android:layout_marginBottom="10dp"
+                                android:background="@drawable/cus_btm"/>
+
                         </LinearLayout>
                     </LinearLayout>
 

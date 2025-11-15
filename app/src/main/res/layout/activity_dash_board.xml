@@ -24,6 +24,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="6dp"
+            android:src="@drawable/outline_arrow_back_24"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/tvDashBoard"
+            android:layout_marginStart="15dp" />
+
         <!-- Dashboard Title -->
         <TextView
             android:id="@+id/tvDashBoard"
@@ -38,6 +49,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
+
 
         <!-- PROFILE CARD (Overlapping) -->
         <LinearLayout
@@ -57,6 +69,7 @@
 
             <!-- Profile Image -->
             <ImageView
+                android:id="@+id/ivUser"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:src="@drawable/profile"
@@ -98,6 +111,10 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp"
+            android:elevation="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/rounded_white_bg"
             app:layout_constraintTop_toBottomOf="@id/profileCard"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -107,6 +124,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Hi there.."
+                android:visibility="gone"
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
@@ -116,7 +134,7 @@
                 android:layout_height="wrap_content"
                 android:text="Welcome back.."
                 android:textColor="@color/material_blue_grey_80"
-                android:textSize="14sp" />
+                android:textSize="18sp" />
         </LinearLayout>
 
         <!-- FIRST CARD -->
@@ -125,20 +143,23 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="5dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/white"
             app:layout_constraintTop_toBottomOf="@+id/welcomeSection"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <Button
+            <TextView
                 android:id="@+id/btnCenter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="20dp"
-                android:text="Center"
-                android:textColor="@color/black"
-                android:backgroundTint="@color/white"
+                android:text="Center Geo Punching"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:background="@drawable/cus_btm"
+                android:textColor="@color/white"
+
                 android:textSize="20sp" />
 
         </androidx.cardview.widget.CardView>
@@ -150,21 +171,23 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
             android:layout_marginBottom="20dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="5dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/white"
             app:layout_constraintTop_toBottomOf="@+id/cardView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <Button
+            <TextView
                 android:id="@+id/btnBranch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="20dp"
-                android:text="Branch"
-                android:backgroundTint="@color/white"
+                android:text="Branch Geo Punching"
+                android:gravity="center"
+                android:background="@drawable/cus_btm"
                 android:textSize="20sp"
-                android:textColor="@color/black" />
+                android:textStyle="bold"
+                android:textColor="@color/white" />
 
         </androidx.cardview.widget.CardView>
 

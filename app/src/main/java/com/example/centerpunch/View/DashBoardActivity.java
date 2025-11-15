@@ -19,6 +19,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.centerpunch.BaseMethod.BaseActivity;
 import com.example.centerpunch.Network.NetWorkCheck;
 import com.example.centerpunch.R;
@@ -38,11 +39,22 @@ public class DashBoardActivity extends BaseActivity implements NetWorkCheck.Netw
         NetWorkCheck.registerNetworkCallback(this);
         binding = ActivityDashBoardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        if (!NetWorkCheck.isInternetAvailable(this)) {
+        if (!NetWorkCheck.isInternetAvailable()) {
             showNoInternetDialog();
         }
         String EmpName = sharedPreferences.getString("EmpName",null);
-        binding.tvEmpName.setText("Hi there.. " + EmpName);
+        binding.tvEmpName.setText(EmpName);
+        String imageURL = sharedPreferences.getString("IMAGE_URL", null);
+
+        if (imageURL != null && !imageURL.isEmpty()) {
+
+            Glide.with(this).load(imageURL)
+                    .placeholder(R.drawable.profile)
+                    .error(R.drawable.profile)
+                    .circleCrop()
+                    .into(binding.ivUser);
+        }
+
         binding.btnCenter.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -52,6 +64,12 @@ public class DashBoardActivity extends BaseActivity implements NetWorkCheck.Netw
             }
         });
 
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         binding.btnBranch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,6 +109,8 @@ public class DashBoardActivity extends BaseActivity implements NetWorkCheck.Netw
 
     }
 
+
+
     private void showNoInternetDialog() {
         if (noInternetDialog != null && noInternetDialog.isShowing()) return;
 
@@ -110,11 +130,16 @@ public class DashBoardActivity extends BaseActivity implements NetWorkCheck.Netw
 
         btnExit.setOnClickListener(v -> {
             noInternetDialog.dismiss();
-            finish();
+            finishAffinity();
         });
 
         noInternetDialog.show();
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
+    }
 }

@@ -31,7 +31,7 @@ public class SplashScreen extends AppCompatActivity implements NetWorkCheck.Netw
         NetWorkCheck.registerNetworkCallback(this);
 
         // Initial check
-        if (NetWorkCheck.isInternetAvailable(this)) {
+        if (NetWorkCheck.isInternetAvailable()) {
             goToLogin();
         } else {
             showNoInternetDialog();
@@ -92,6 +92,7 @@ public class SplashScreen extends AppCompatActivity implements NetWorkCheck.Netw
     protected void onDestroy() {
         super.onDestroy();
         NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
     }
 
 }

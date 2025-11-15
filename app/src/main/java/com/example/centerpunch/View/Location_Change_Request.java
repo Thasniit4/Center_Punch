@@ -8,9 +8,13 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
 import java.util.List;
@@ -18,6 +22,7 @@ import java.util.Locale;
 
 import com.example.centerpunch.BaseMethod.BaseActivity;
 import com.example.centerpunch.BaseMethod.GpsTracker;
+import com.example.centerpunch.Network.NetWorkCheck;
 import com.example.centerpunch.PunchApi.PunchRequest;
 import com.example.centerpunch.PunchApi.PunchResponse;
 import com.example.centerpunch.PunchApi.RetrofitClient;
@@ -28,7 +33,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Location_Change_Request extends BaseActivity {
+public class Location_Change_Request extends BaseActivity implements NetWorkCheck.NetworkChangeListener{
+
+    private AlertDialog noInternetDialog;
     String selectedItem,BranchId,CurrentLat,CurrentLong,city,value,CenterId,ActivityName,Alert;
     int Req;
     float lat2,long2,GeoLat,GeoLong;
@@ -43,6 +50,11 @@ public class Location_Change_Request extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_change_request);
+        NetWorkCheck.setNetworkChangeListener(this);
+        NetWorkCheck.registerNetworkCallback(this);
+        if (!NetWorkCheck.isInternetAvailable()) {
+            showNoInternetDialog();
+        }
         binding = ActivityLocationChangeRequestBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         sessionHandler = new Handler();
@@ -77,6 +89,13 @@ public class Location_Change_Request extends BaseActivity {
                         "¥"+lat2+"¥"+long2+"¥"+binding.OldLat.getText()+"¥"+binding.OldLong.getText()+"¥"+city;
                 showChangeCenter(value);
                 //  FDA_Request(value);
+            }
+        });
+
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
             }
         });
     }
@@ -223,6 +242,46 @@ public class Location_Change_Request extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         sessionHandler.removeCallbacks(sessionRunnable);
+        NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
     }
 
+    @Override
+    public void onNetworkAvailable() {
+        runOnUiThread(() -> {
+            if (noInternetDialog != null && noInternetDialog.isShowing()) {
+                noInternetDialog.dismiss();
+            }
+        });
+    }
+
+    @Override
+    public void onNetworkLost() {
+        Log.e("LoginPage", "Internet lost!");
+        runOnUiThread(this::showNoInternetDialog);
+    }
+    private void showNoInternetDialog() {
+        if (noInternetDialog != null && noInternetDialog.isShowing()) return;
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_no_internet, null);
+
+        noInternetDialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .setCancelable(false)
+                .create();
+
+        Button btnSettings = view.findViewById(R.id.btn_open_settings);
+        Button btnExit = view.findViewById(R.id.btn_exit);
+
+        btnSettings.setOnClickListener(v -> {
+            startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
+        });
+
+        btnExit.setOnClickListener(v -> {
+            noInternetDialog.dismiss();
+            finishAffinity();
+        });
+
+        noInternetDialog.show();
+    }
 }

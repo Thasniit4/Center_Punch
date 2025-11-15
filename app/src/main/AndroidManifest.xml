@@ -38,7 +38,8 @@
             android:theme="@style/Theme.CenterPunch.NoActionBar" />
         <activity
             android:name=".View.Location_Change_Request"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.CenterPunch.NoActionBar"/>
         <activity
             android:name=".View.RITC_RTSE_PUNCH"
             android:exported="false" />

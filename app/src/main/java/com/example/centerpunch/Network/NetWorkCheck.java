@@ -6,28 +6,44 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.util.Log;
 
+
 public class NetWorkCheck {
 
     private static final String TAG = "NetWorkCheck";
-    private static boolean isInternetAvailable = false;
-    private static NetworkChangeListener listener;
 
+    // Listener interface
     public interface NetworkChangeListener {
         void onNetworkAvailable();
         void onNetworkLost();
     }
 
+    private static NetworkChangeListener listener;
+
+    // Track internet availability
+    private static boolean isInternetAvailable = false;
+
+    // Store callback + manager so we can unregister safely
+    private static ConnectivityManager.NetworkCallback networkCallback;
+    private static ConnectivityManager connectivityManager;
+
+    // Set listener
     public static void setNetworkChangeListener(NetworkChangeListener newListener) {
         listener = newListener;
     }
 
+    // Register callback
     public static void registerNetworkCallback(Context context) {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
+        connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivityManager == null) return;
 
-        connectivityManager.registerDefaultNetworkCallback(new ConnectivityManager.NetworkCallback() {
+        // Avoid double registration
+        if (networkCallback != null) {
+            Log.e(TAG, "Callback already registered");
+            return;
+        }
+
+        networkCallback = new ConnectivityManager.NetworkCallback() {
+
             @Override
             public void onAvailable(Network network) {
                 Log.e(TAG, "Network available");
@@ -43,26 +59,42 @@ public class NetWorkCheck {
             }
 
             @Override
-            public void onCapabilitiesChanged(Network network, NetworkCapabilities nc) {
-                boolean hasInternet = nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            public void onCapabilitiesChanged(Network network, NetworkCapabilities capabilities) {
+                boolean hasInternet = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
                 isInternetAvailable = hasInternet;
-                if (listener != null && hasInternet) listener.onNetworkAvailable();
+
+                if (listener != null && hasInternet) {
+                    listener.onNetworkAvailable();
+                }
             }
-        });
+        };
+
+        try {
+            connectivityManager.registerDefaultNetworkCallback(networkCallback);
+            Log.e(TAG, "Network callback registered");
+        } catch (Exception e) {
+            Log.e(TAG, "Error registering callback", e);
+        }
     }
 
-    public static boolean isInternetAvailable(Context context) {
-        if (isInternetAvailable) return true;
+    // Unregister callback safely
+    public static void unregisterNetworkCallback() {
+        if (connectivityManager != null && networkCallback != null) {
+            try {
+                connectivityManager.unregisterNetworkCallback(networkCallback);
+                Log.e(TAG, "Network callback unregistered");
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering network callback", e);
+            }
+        }
+        networkCallback = null;
+    }
 
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) return false;
-        Network network = cm.getActiveNetwork();
-        if (network == null) return false;
-
-        NetworkCapabilities nc = cm.getNetworkCapabilities(network);
-        return nc != null && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    public static boolean isInternetAvailable() {
+        return isInternetAvailable;
     }
 }
+
 
 
 

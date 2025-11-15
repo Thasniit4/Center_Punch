@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -32,6 +33,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.centerpunch.BaseMethod.BaseActivity;
 import com.example.centerpunch.BaseMethod.GpsTracker;
+import com.example.centerpunch.Network.NetWorkCheck;
 import com.example.centerpunch.PunchApi.PunchRequest;
 import com.example.centerpunch.PunchApi.PunchResponse;
 import com.example.centerpunch.PunchApi.RetrofitClient;
@@ -62,8 +64,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RITC_RTSE_PUNCH extends BaseActivity {
-
+public class RITC_RTSE_PUNCH extends BaseActivity implements NetWorkCheck.NetworkChangeListener {
+    private androidx.appcompat.app.AlertDialog noInternetDialog;
     private androidx.appcompat.app.AlertDialog loaderDialog;
     private static final int REQUEST_LOCATION = 1;
     private static final int CAME_REQ = 100;
@@ -87,8 +89,13 @@ public class RITC_RTSE_PUNCH extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ritc_rtse_punch);
+        NetWorkCheck.setNetworkChangeListener(this);
+        NetWorkCheck.registerNetworkCallback(this);
         binding = ActivityRitcRtsePunchBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        if (!NetWorkCheck.isInternetAvailable()) {
+            showNoInternetDialog();
+        }
         sessionHandler = new Handler();
         sessionRunnable = () -> {
             Toast.makeText(RITC_RTSE_PUNCH.this, "Session expired due to inactivity", Toast.LENGTH_LONG).show();
@@ -192,6 +199,8 @@ public class RITC_RTSE_PUNCH extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         sessionHandler.removeCallbacks(sessionRunnable);
+        NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
     }
 
     private double meterDistanceBetweenPoints(float lat_a, float lng_a, float lat_b, float lng_b) {
@@ -737,5 +746,46 @@ public class RITC_RTSE_PUNCH extends BaseActivity {
         sDialog.setContentText("No Data Available");
         sDialog.setCancelable(false);
         sDialog.show();
+    }
+
+    @Override
+    public void onNetworkAvailable() {
+        Log.e("LoginPage", "Internet is back!");
+        runOnUiThread(() -> {
+            if (noInternetDialog != null && noInternetDialog.isShowing()) {
+                noInternetDialog.dismiss();
+            }
+        });
+    }
+
+    @Override
+    public void onNetworkLost() {
+        Log.e("LoginPage", "Internet lost!");
+        runOnUiThread(this::showNoInternetDialog);
+    }
+
+    private void showNoInternetDialog() {
+        if (noInternetDialog != null && noInternetDialog.isShowing()) return;
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_no_internet, null);
+
+        noInternetDialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setView(view)
+                .setCancelable(false)
+                .create();
+
+        Button btnSettings = view.findViewById(R.id.btn_open_settings);
+        Button btnExit = view.findViewById(R.id.btn_exit);
+
+        btnSettings.setOnClickListener(v -> {
+            startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
+        });
+
+        btnExit.setOnClickListener(v -> {
+            noInternetDialog.dismiss();
+            finishAffinity();
+        });
+
+        noInternetDialog.show();
     }
 }

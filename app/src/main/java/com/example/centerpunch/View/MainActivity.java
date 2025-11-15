@@ -119,7 +119,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         setContentView(binding.getRoot());
         NetWorkCheck.setNetworkChangeListener(this);
         NetWorkCheck.registerNetworkCallback(this);
-        if (!NetWorkCheck.isInternetAvailable(this)) {
+        if (!NetWorkCheck.isInternetAvailable()) {
             showNoInternetDialog();
         }
 
@@ -150,6 +150,18 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     })
                     .show();
         }
+        String EmpName = sharedPreferences.getString("EmpName",null);
+        binding.tvEmpName.setText(EmpName);
+        String imageURL = sharedPreferences.getString("IMAGE_URL", null);
+
+        if (imageURL != null && !imageURL.isEmpty()) {
+
+            Glide.with(this).load(imageURL)
+                    .placeholder(R.drawable.profile)
+                    .error(R.drawable.profile)
+                    .circleCrop()
+                    .into(binding.profileImg);
+        }
         binding.linear2.setVisibility(View.GONE);
         binding.linear3.setVisibility(View.GONE);
         getFDAList();
@@ -173,17 +185,18 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     binding.imageView.setImageDrawable(null);
                     binding.submit.setVisibility(View.VISIBLE);
                     selectedCenterId = centerMap.get(selectedItem);
-                    LayoutInflater inflater = getLayoutInflater();
-                    View layout = inflater.inflate(R.layout.custom_snackbar, null);
-                    TextView text = layout.findViewById(R.id.toast_text);
-                    text.setText("Center ID!" + selectedCenterId);
-                    ImageView icon = layout.findViewById(R.id.toast_icon);
-                    icon.setImageResource(R.drawable.tick); // Replace with your drawable
-                    Toast toast = new Toast(getApplicationContext());
-                    toast.setDuration(Toast.LENGTH_LONG);
-                    toast.setView(layout);
-                    toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-                    toast.show();
+                    Toast.makeText(MainActivity.this,"Center ID!" + selectedCenterId,Toast.LENGTH_SHORT).show();
+//                    LayoutInflater inflater = getLayoutInflater();
+//                    View layout = inflater.inflate(R.layout.custom_snackbar, null);
+//                    TextView text = layout.findViewById(R.id.toast_text);
+//                    text.setText("Center ID!" + selectedCenterId);
+//                    ImageView icon = layout.findViewById(R.id.toast_icon);
+//                    icon.setImageResource(R.drawable.tick); // Replace with your drawable
+//                    Toast toast = new Toast(getApplicationContext());
+//                    toast.setDuration(Toast.LENGTH_LONG);
+//                    toast.setView(layout);
+//                    toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
+//                    toast.show();
                   //  Toast.makeText(MainActivity.this, "Center ID: " + selectedCenterId , Toast.LENGTH_LONG).show();
                     GetCenterLocation(selectedItem,selectedCenterId);
                 }
@@ -206,6 +219,12 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
 //                }, 2000);
 //            }
 //        });
+        binding.btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
 
         binding.cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -222,7 +241,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         binding.photoVerify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (NetWorkCheck.isInternetAvailable(MainActivity.this)) {
+                if (NetWorkCheck.isInternetAvailable()) {
                     // ✅ Internet is available → proceed with photo verification
                     photoVerify();
 
@@ -316,6 +335,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         super.onDestroy();
         sessionHandler.removeCallbacks(sessionRunnable);
         NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
     }
 
     private double meterDistanceBetweenPoints(float lat_a, float lng_a, float lat_b, float lng_b) {

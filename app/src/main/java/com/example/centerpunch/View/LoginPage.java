@@ -4,7 +4,6 @@ import static android.widget.Toast.LENGTH_SHORT;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -19,9 +18,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AlertDialog;
-
 import com.example.centerpunch.LoginApi.PhotoExistRequest;
 import com.example.centerpunch.LoginApi.PhotoExistResponse;
 import com.example.centerpunch.Network.ApiInterface;
@@ -34,7 +31,6 @@ import com.example.centerpunch.PunchApi.PunchRequest;
 import com.example.centerpunch.PunchApi.PunchResponse;
 import com.example.centerpunch.PunchApi.RetrofitClient;
 import com.example.centerpunch.R;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
 import retrofit2.Callback;
@@ -44,7 +40,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
 
     ApiInterface apiInterface;
     EditText user, pass;
-    Button submit;
+    TextView submit;
     int empcode;
     String pEmpCode;
 
@@ -78,9 +74,6 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
         editor.putBoolean("verifiedThisSession", false);
         editor.apply();
 
-        if (!NetWorkCheck.isInternetAvailable(this)) {
-            showNoInternetDialog();
-        }
 
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,17 +83,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                 Log.d("LoginCheck", "Username: " + user.getText().toString());
                 Log.d("LoginCheck", "Password: " + pass.getText().toString());
                 if (isAllFieldsChecked ) {
-                    LayoutInflater inflater = getLayoutInflater();
-                    View layout = inflater.inflate(R.layout.custom_snackbar, null);
-                    TextView text = layout.findViewById(R.id.toast_text);
-                    text.setText("Logged Successfully!");
-                    ImageView icon = layout.findViewById(R.id.toast_icon);
-                    icon.setImageResource(R.drawable.tick); // Replace with your drawable
-                    Toast toast = new Toast(getApplicationContext());
-                    toast.setDuration(Toast.LENGTH_LONG);
-                    toast.setView(layout);
-                    toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-                    toast.show();
+
 
                     // All good — proceed with login
                     getUser(user.getText().toString());
@@ -117,17 +100,19 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                         showNoInternetDialog();
                     }
 
-                    LayoutInflater inflater = getLayoutInflater();
-                    View layout = inflater.inflate(R.layout.custom_snackbar, null);
-                    TextView text = layout.findViewById(R.id.toast_text);
-                    text.setText("Login failed!");
-                    ImageView icon = layout.findViewById(R.id.toast_icon);
-                    icon.setImageResource(R.drawable.tick); // Replace with your drawable
-                    Toast toast = new Toast(getApplicationContext());
-                    toast.setDuration(Toast.LENGTH_LONG);
-                    toast.setView(layout);
-                    toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-                    toast.show();
+                    Toast.makeText(LoginPage.this,"Login failed", LENGTH_SHORT).show();
+
+//                    LayoutInflater inflater = getLayoutInflater();
+//                    View layout = inflater.inflate(R.layout.custom_snackbar, null);
+//                    TextView text = layout.findViewById(R.id.toast_text);
+//                    text.setText("Login failed!");
+//                    ImageView icon = layout.findViewById(R.id.toast_icon);
+//                    icon.setImageResource(R.drawable.tick); // Replace with your drawable
+//                    Toast toast = new Toast(getApplicationContext());
+//                    toast.setDuration(Toast.LENGTH_LONG);
+//                    toast.setView(layout);
+//                    toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
+//                    toast.show();
 
                 }
             }
@@ -243,7 +228,17 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                 cancelTimeout();  // Cancel timeout
                 hideLoader();
                 punchResponse = response.body();
+//                if (punchResponse == null) {
+//                    Toast.makeText(LoginPage.this, "Server error. Please try again later.", Toast.LENGTH_LONG).show();
+//                    return;
+//                }
+//                if (punchResponse.getCenterpunchdata() == null ||
+//                        punchResponse.getCenterpunchdata().isEmpty()) {
+//                    Toast.makeText(LoginPage.this, "You are not authorised to login.", Toast.LENGTH_LONG).show();
+//                    return;
+//                }
                 if (punchResponse.getCenterpunchdata() != null && !punchResponse.getCenterpunchdata().isEmpty()) {
+                    Toast.makeText(LoginPage.this, "Logged Successfully.", Toast.LENGTH_LONG).show();
                     String Alert = punchResponse.getCenterpunchdata().get(0).getAlert();
                     String PostId = String.valueOf(punchResponse.getCenterpunchdata().get(0).getPosTID());
                     empcode = punchResponse.getCenterpunchdata().get(0).getEmPCODE();
@@ -266,14 +261,17 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
                         GetDeviceId(userid, deviceId);
                     } else {
-                        assert Alert != null;
+                     //   assert Alert != null;
                         if (Alert.equals("NOTPUNCH")) {
                             Toast.makeText(LoginPage.this, "Login is allowed only with your employee code. You can't log in on another device once logged in.", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(LoginPage.this, "You are not authorised to login....", Toast.LENGTH_LONG).show();
                         }
+
                     }
-                } else {
+
+                }
+                else {
                     hideLoader();
                     Toast.makeText(LoginPage.this, "You are not authorised to login.", Toast.LENGTH_LONG).show();
                 }
@@ -305,17 +303,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                     if (Alert.equals("insert") || Alert.equals("success")) {
                         Intent inn = new Intent(LoginPage.this, RITC_RTSE_PUNCH.class);
                         startActivity(inn);
-                        LayoutInflater inflater = getLayoutInflater();
-                        View layout = inflater.inflate(R.layout.custom_snackbar, null);
-                        TextView text = layout.findViewById(R.id.toast_text);
-                        text.setText("Logged Successfully!");
-                        ImageView icon = layout.findViewById(R.id.toast_icon);
-                        icon.setImageResource(R.drawable.tick); // Replace with your drawable
-                        Toast toast = new Toast(getApplicationContext());
-                        toast.setDuration(Toast.LENGTH_LONG);
-                        toast.setView(layout);
-                        toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-                        toast.show();
+
                       //  Toast.makeText(LoginPage.this, "Login successfully", LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(LoginPage.this, "Login is allowed only with your employee code. You can't log in on another device once logged in.", Toast.LENGTH_LONG).show();
@@ -362,9 +350,10 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
 
                     imageUrl = photoExistResponse.getImageUrl();
                     Log.d("imageUrl", "imageUrl = " + imageUrl);
-
                     if (imageUrl != null && !imageUrl.isEmpty()) {
-
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("IMAGE_URL", imageUrl);
+                        editor.apply();
                         startActivity(new Intent(LoginPage.this, DashBoardActivity.class));
 
                         // show toast...
@@ -487,7 +476,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
 
         btnExit.setOnClickListener(v -> {
             noInternetDialog.dismiss();
-            finish();
+           finishAffinity();
         });
 
         noInternetDialog.show();
@@ -547,6 +536,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
         super.onDestroy();
         // Always clear the listener when the activity is destroyed
         NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
     }
 
 

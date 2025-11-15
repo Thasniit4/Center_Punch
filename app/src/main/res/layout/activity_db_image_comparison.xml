@@ -10,23 +10,142 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white"
-        android:paddingTop="?attr/actionBarSize"
-        android:backgroundTint="@color/lite_red"
         tools:ignore="MissingConstraints">
 
-        <!-- Card container for main content -->
+        <View
+            android:id="@+id/header"
+            android:layout_width="0dp"
+            android:layout_height="220dp"
+            android:background="@color/lite_red"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/btnLogout"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="6dp"
+            android:src="@drawable/logout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/tvDashBoard"
+            android:layout_marginStart="15dp" />
+
+        <TextView
+            android:id="@+id/tvDashBoard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="Dash Board"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/profileCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            android:background="@drawable/rounded_white_bg"
+            android:elevation="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:translationY="-60dp"
+            app:layout_constraintTop_toBottomOf="@id/header"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Profile Image -->
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/profile"
+                android:background="@drawable/circle_bg"
+                android:padding="2dp" />
+
+            <!-- TEXT NEXT TO IMAGE -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:id="@+id/tvEmpNames"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hi there,"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/tvEmpName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="username@gmail.com"
+                    android:textSize="14sp"
+                    android:visibility="visible"
+                    android:textColor="@color/material_blue_grey_80" />
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/welcomeSection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:elevation="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/rounded_white_bg"
+            app:layout_constraintTop_toBottomOf="@id/profileCard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/tvHeading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" Hi there.."
+                android:visibility="gone"
+                android:textColor="@color/material_blue_grey_80"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvWelcomeBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Take your Photo.."
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+         Card container for main content
+
         <androidx.cardview.widget.CardView
             android:id="@+id/contentCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="8dp"
             app:cardElevation="5dp"
             app:cardUseCompatPadding="true"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/welcomeSection">
 
             <LinearLayout
                 android:id="@+id/adapterlayout"
@@ -43,13 +162,12 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="16dp"
-                    android:text="PHOTO PUNCH"
-                    android:padding="10dp"
                     android:elevation="5dp"
+                    android:padding="10dp"
+                    android:text="One Time Registration"
                     android:textColor="@color/black"
-                    android:textStyle="bold"
                     android:textSize="20sp"
-                    />
+                    android:textStyle="bold" />
 
                 <!-- Image / Camera section -->
                 <LinearLayout
@@ -100,15 +218,17 @@
                     android:layout_height="wrap_content"
                     android:gravity="center">
 
-                    <Button
+                    <TextView
                         android:id="@+id/submit"
-                        android:layout_width="130dp"
-                        android:layout_height="50dp"
-                        android:text="Confirm"
-                        android:textColor="@color/black"
-                        android:textSize="14sp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:elevation="5dp"
-                        app:backgroundTint="@color/lite_red" />
+                        android:text="Confirm"
+                        android:padding="20dp"
+                        android:gravity="center"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:background="@drawable/cus_btm" />
                 </LinearLayout>
 
             </LinearLayout>

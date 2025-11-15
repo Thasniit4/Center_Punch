@@ -2,6 +2,7 @@ package com.example.centerpunch.View;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -64,9 +65,18 @@ public class DbImageComparison extends BaseActivity implements NetWorkCheck.Netw
         setContentView(binding.getRoot());
         NetWorkCheck.setNetworkChangeListener(this);
         NetWorkCheck.registerNetworkCallback(this);
-        if (!NetWorkCheck.isInternetAvailable(this)) {
+        if (!NetWorkCheck.isInternetAvailable()) {
             showNoInternetDialog();
         }
+        binding.btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showExitAlert();
+            }
+        });
+
+        String EmpName = sharedPreferences.getString("EmpName",null);
+        binding.tvEmpName.setText(EmpName);
         // Open camera
         binding.cameraButton.setOnClickListener(v -> {
             Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -339,10 +349,34 @@ public class DbImageComparison extends BaseActivity implements NetWorkCheck.Netw
 
         btnExit.setOnClickListener(v -> {
             noInternetDialog.dismiss();
-            finish();
+            finishAffinity();
         });
 
         noInternetDialog.show();
+    }
+
+    private void showExitAlert() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout from your account?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(DbImageComparison.this, "Logout successfully", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(DbImageComparison.this, LoginPage.class));
+                        DbImageComparison.this.finish();
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(this, "Back is disabled on this screen", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -350,6 +384,7 @@ public class DbImageComparison extends BaseActivity implements NetWorkCheck.Netw
         super.onDestroy();
         // Always clear the listener when the activity is destroyed
         NetWorkCheck.setNetworkChangeListener(null);
+        NetWorkCheck.unregisterNetworkCallback();
     }
 
 }

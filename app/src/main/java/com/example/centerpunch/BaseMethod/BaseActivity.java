@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,8 @@ public class BaseActivity extends AppCompatActivity {
     private Handler timeoutHandler;
     private Runnable timeoutRunnable;
 
+    public String ImageURL;
+
     private AlertDialog loaderDialog;
 
     @Override
@@ -39,7 +42,8 @@ public class BaseActivity extends AppCompatActivity {
         EmpName = sharedPreferences.getString("EmpName",null);
         ToDate = sharedPreferences.getString("ToDate",null);
         branchid = sharedPreferences.getString("branchid",null);
-
+        ImageURL = sharedPreferences.getString("IMAGE_URL", null);
+        Log.d("SavedImageUrl", "URL = " + ImageURL);
         progressBar = new ProgressDialog(this);
         progressBar.setCancelable(false);//you can cancel it by pressing back button
         progressBar.setMessage("Loading...");
