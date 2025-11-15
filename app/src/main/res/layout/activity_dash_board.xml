@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+
     <data>
 
     </data>
@@ -11,69 +11,162 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/lite_yellow"
+        android:background="@color/white"
         tools:context=".View.DashBoardActivity">
 
+        <!-- TOP HEADER -->
+        <View
+            android:id="@+id/header"
+            android:layout_width="0dp"
+            android:layout_height="220dp"
+            android:background="@color/lite_red"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Dashboard Title -->
         <TextView
             android:id="@+id/tvDashBoard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:padding="10dp"
-            android:text="Dash Board"
-            android:textColor="@color/black"
+            android:text="Dashboard"
+            android:textColor="@color/white"
             android:textSize="22sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/buttonContainer"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:padding="20dp"
-        app:layout_constraintTop_toBottomOf="@id/tvDashBoard"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Center Button -->
-        <Button
-            android:id="@+id/btnCenter"
+        <!-- PROFILE CARD (Overlapping) -->
+        <LinearLayout
+            android:id="@+id/profileCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Center"
-            android:textColor="@color/black"
-            android:backgroundTint="@color/lite_red"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="20dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            android:background="@drawable/rounded_white_bg"
+            android:elevation="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:translationY="-60dp"
+            app:layout_constraintTop_toBottomOf="@id/header"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btnBranch"
-            app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintHorizontal_chainStyle="spread_inside"
-            android:layout_marginEnd="8dp" /> <!-- ✅ space on right -->
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Branch Button -->
-        <Button
-            android:id="@+id/btnBranch"
+            <!-- Profile Image -->
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/profile"
+                android:background="@drawable/circle_bg"
+                android:padding="2dp" />
+
+            <!-- TEXT NEXT TO IMAGE -->
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:id="@+id/tvEmpNames"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hi there,"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/tvEmpName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="username@gmail.com"
+                    android:textSize="14sp"
+                    android:textColor="@color/material_blue_grey_80" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- WELCOME SECTION -->
+        <LinearLayout
+            android:id="@+id/welcomeSection"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Branch"
-            android:textColor="@color/black"
-            android:backgroundTint="@color/lite_red"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="20dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/btnCenter"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_weight="1"
-            android:layout_marginStart="8dp" />
+            android:orientation="vertical"
+            android:padding="20dp"
+            app:layout_constraintTop_toBottomOf="@id/profileCard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/tvHeading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hi there.."
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvWelcomeBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Welcome back.."
+                android:textColor="@color/material_blue_grey_80"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- FIRST CARD -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="5dp"
+            app:layout_constraintTop_toBottomOf="@+id/welcomeSection"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <Button
+                android:id="@+id/btnCenter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="Center"
+                android:textColor="@color/black"
+                android:backgroundTint="@color/white"
+                android:textSize="20sp" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- SECOND CARD -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/secondCardView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="5dp"
+            app:layout_constraintTop_toBottomOf="@+id/cardView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <Button
+                android:id="@+id/btnBranch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="Branch"
+                android:backgroundTint="@color/white"
+                android:textSize="20sp"
+                android:textColor="@color/black" />
+
+        </androidx.cardview.widget.CardView>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
 </layout>

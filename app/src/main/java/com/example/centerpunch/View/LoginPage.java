@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.provider.Settings;
 import retrofit2.Call;
@@ -444,9 +445,9 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
         });
     }
 
-    public void onBackPressed() {
-        finishAffinity();
-    }
+//    public void onBackPressed() {
+//        finishAffinity();
+//    }
 
 
     @Override
@@ -490,6 +491,51 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
         });
 
         noInternetDialog.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        showExitAlert();
+    }
+
+    private void showExitAlert() {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.custom_exit_alert, null);
+
+        Button btnYes = view.findViewById(R.id.btnYes);
+        Button btnCancel = view.findViewById(R.id.btnCancel);
+
+        builder.setView(view);
+        android.app.AlertDialog dialog = builder.create();
+
+        // Optional: make background transparent
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        btnYes.setOnClickListener(v -> {
+            LayoutInflater inflater = getLayoutInflater();
+            View layout = inflater.inflate(R.layout.custom_snackbar, null);
+            TextView text = layout.findViewById(R.id.toast_text);
+            text.setText("Application Closed!");
+
+            ImageView icon = layout.findViewById(R.id.toast_icon);
+            icon.setImageResource(R.drawable.tick); // Replace with your drawable
+
+            Toast toast = new Toast(getApplicationContext());
+            toast.setDuration(Toast.LENGTH_LONG);
+            toast.setView(layout);
+            toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
+            toast.show();
+            //  Toast.makeText(MainActivity.this, "Logout successfully", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(LoginPage.this, LoginPage.class));
+            finish();
+            dialog.dismiss();
+        });
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
 

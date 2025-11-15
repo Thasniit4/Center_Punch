@@ -41,7 +41,8 @@ public class DashBoardActivity extends BaseActivity implements NetWorkCheck.Netw
         if (!NetWorkCheck.isInternetAvailable(this)) {
             showNoInternetDialog();
         }
-
+        String EmpName = sharedPreferences.getString("EmpName",null);
+        binding.tvEmpName.setText("Hi there.. " + EmpName);
         binding.btnCenter.setOnClickListener(new View.OnClickListener() {
 
             @Override
