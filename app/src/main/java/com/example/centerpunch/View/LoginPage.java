@@ -261,7 +261,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
                         GetDeviceId(userid, deviceId);
                     } else {
-                     //   assert Alert != null;
+                        assert Alert != null;
                         if (Alert.equals("NOTPUNCH")) {
                             Toast.makeText(LoginPage.this, "Login is allowed only with your employee code. You can't log in on another device once logged in.", Toast.LENGTH_LONG).show();
                         } else {
@@ -517,9 +517,8 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
             toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
             toast.show();
             //  Toast.makeText(MainActivity.this, "Logout successfully", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(LoginPage.this, LoginPage.class));
-            finish();
             dialog.dismiss();
+            finishAffinity();
         });
 
         btnCancel.setOnClickListener(v -> dialog.dismiss());

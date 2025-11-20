@@ -55,6 +55,7 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
+
         webView = findViewById(R.id.webView);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -70,10 +71,10 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
         if (!NetWorkCheck.isInternetAvailable()) {
             showNoInternetDialog();
         }
-        String backCamera=getIntent().getStringExtra("flipCamera");
+        String backCamera = getIntent().getStringExtra("flipCamera");
         String videoUrl = getIntent().getStringExtra("videoUrl");
         token = getIntent().getStringExtra("token");
-        String faceMatch= getIntent().getStringExtra("faceMatch");
+        String faceMatch = getIntent().getStringExtra("faceMatch");
         Log.d("Video_token", "getToken " + token);
         requestCameraPermission();
         webView.setWebChromeClient(new WebChromeClient() {
@@ -94,8 +95,7 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
             Log.d("VideoURL", "Loaded: " + videoUrl);
             startCheckingForCompletion();
 
-        }
-        else {
+        } else {
 
             Toast.makeText(this, "No video URL provided", LENGTH_SHORT).show();
             showNoInternetDialog();
@@ -168,13 +168,13 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
             public void onResponse(Call<VerificationCompleteResponse> call, Response<VerificationCompleteResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     VerificationCompleteResponse verificationCompleteResponse = response.body();
-                    String error=verificationCompleteResponse.getResult().getFaceMatch().getMessage();
-                    String matchPercentageStr = verificationCompleteResponse.getResult()
-                            .getFaceMatch()
-                            .getMatchPercentage();  // e.g. "99.00%"
-
+                    String error = verificationCompleteResponse.getResult().getFaceMatch().getMessage();
+                    String matchPercentageStr = verificationCompleteResponse.getResult().getFaceMatch().getMatchPercentage();  // e.g. "99.00%"
+                    boolean allowCamera = Boolean.parseBoolean(verificationCompleteResponse.getEssentials().getAllowCameraSwitch());
+                    boolean liveness = verificationCompleteResponse.getResult().getPassiveLiveliness().getLiveness();
 
                     Log.d("matchPercentage", "matchPercentage1: " + matchPercentageStr);
+
 
                     if (matchPercentageStr != null && matchPercentageStr.endsWith("%")) {
                         matchPercentageStr = matchPercentageStr.replace("%", ""); // remove %
@@ -182,42 +182,53 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
                     }
 
                     try {
-                        double matchValue = Double.parseDouble(matchPercentageStr); // convert to number
+                        double matchValue = Double.parseDouble(matchPercentageStr);
 
-                        if (matchValue > 75.00) {
-                            String capturedImage = verificationCompleteResponse.getResult().getCapturedImage();
-                            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("capturedImage", capturedImage);
-                            editor.putBoolean("verifiedThisSession", true);
-                            editor.putBoolean("verificationFailed", false);
-                            editor.apply();
-                            getOnBackPressedDispatcher().onBackPressed();
-                            Log.d("savedImage","Saved Image4" +capturedImage);
-                            //  startActivity(new Intent(WebViewActivity.this, MainActivity.class));
-                            Log.d("matchPercentage", "matchPercentage3: " + matchPercentageStr);
-                        } else {
+                        if (error != null && error.equals("Verification completed with negative result") && liveness == false) {
                             SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                             prefs.edit()
                                     .putBoolean("verifiedThisSession", false)
-                                    .putBoolean("verificationFailed", true)
+                                    .putBoolean("Verification Failed", true)
                                     .remove("capturedImage")
                                     .apply();
+                            Toast.makeText(WebViewActivity.this, "Verification failed", Toast.LENGTH_LONG).show();
                             showBeautifulAlertDialog();
-                            Log.d("matchPercentage", "matchPercentage4: " + matchPercentageStr);
+                            return;
+                        } else {
+                            assert error != null;
+                            if (error.equals("Verification completed with positive result") && matchValue > 75.00 && liveness == true) {
+                                String capturedImage = verificationCompleteResponse.getResult().getCapturedImage();
+                                SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = prefs.edit();
+                                editor.putString("capturedImage", capturedImage);
+                                editor.putBoolean("verifiedThisSession", true);
+                                editor.putBoolean("Verification Failed", false);
+                                editor.apply();
+                                getOnBackPressedDispatcher().onBackPressed();
+                                Log.d("savedImage", "Saved Image4" + capturedImage);
+                                //  startActivity(new Intent(WebViewActivity.this, MainActivity.class));
+                                Log.d("matchPercentage", "matchPercentage3: " + matchPercentageStr);
 
+                            } else {
+                                SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                                prefs.edit()
+                                        .putBoolean("verifiedThisSession", false)
+                                        .putBoolean("verificationFailed", true)
+                                        .remove("capturedImage")
+                                        .apply();
+                                showBeautifulAlertDialog();
+                                Log.d("matchPercentage", "matchPercentage4: " + matchPercentageStr);
+
+                            }
                         }
+
 
                     } catch (NumberFormatException e) {
                         Toast.makeText(WebViewActivity.this, "Invalid match percentage value", Toast.LENGTH_SHORT).show();
                         Log.e("matchPercentage", "Error parsing matchPercentageStr: " + matchPercentageStr, e);
                     }
 
-                }
-
-                else
-
-                {
+                } else {
                     Toast.makeText(WebViewActivity.this, "Verification Error! Try again.", LENGTH_SHORT).show();
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         getOnBackPressedDispatcher().onBackPressed();
@@ -250,7 +261,8 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
         Button okButton = view.findViewById(R.id.btnOk);
         okButton.setOnClickListener(v -> {
             dialog.dismiss();
-            getOnBackPressedDispatcher().onBackPressed(); // your logic
+            getOnBackPressedDispatcher().onBackPressed();
+            // your logic
         });
 
         dialog.show();
@@ -299,9 +311,30 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacksAndMessages(null); // Stop checking loop
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (webView != null) {
+            webView.onResume();
+            webView.reload(); // Force reload the page when returning
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (webView != null) {
+            webView.loadUrl("about:blank");
+            webView.removeAllViews();
+            webView.destroy();
+            webView = null;
+        }
+        super.onDestroy();
         NetWorkCheck.setNetworkChangeListener(null);
         NetWorkCheck.unregisterNetworkCallback();
     }

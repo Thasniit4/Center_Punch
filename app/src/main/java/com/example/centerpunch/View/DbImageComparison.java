@@ -1,9 +1,11 @@
 package com.example.centerpunch.View;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -22,6 +24,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.centerpunch.BaseMethod.BaseActivity;
@@ -53,7 +56,9 @@ public class DbImageComparison extends BaseActivity implements NetWorkCheck.Netw
     UploadResponse uploadResponse;
     String time;
     private String base64Image = null;
-    private static final int CAME_REQ = 100;
+
+    private static final int CAMERA_PERMISSION_CODE = 200;
+
     String filePath,fileName;
     private NetWorkCheck netWorkCheck;
     private AlertDialog noInternetDialog;
@@ -79,15 +84,31 @@ public class DbImageComparison extends BaseActivity implements NetWorkCheck.Netw
         binding.tvEmpName.setText(EmpName);
         // Open camera
         binding.cameraButton.setOnClickListener(v -> {
-            Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            if (camIntent.resolveActivity(getPackageManager()) != null) {
-                startActivityForResult(camIntent, CAME_REQ);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        CAMERA_PERMISSION_CODE);
+
+            } else {
+                openCamera();
             }
         });
+
 
         // Submit button
         binding.submit.setOnClickListener(v -> uploadData());
     }
+
+    private void openCamera() {
+        Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (camIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(camIntent, CAMERA_PERMISSION_CODE);
+        }
+    }
+
+
 
     /**
      * Validates image and uploads data.
@@ -103,13 +124,13 @@ public class DbImageComparison extends BaseActivity implements NetWorkCheck.Netw
             return;
         }
 
+
+
         // Prepare upload data
         DateFormat dfTime = new SimpleDateFormat("HH:mm");
         time = dfTime.format(Calendar.getInstance().getTime());
         checkPhoto = EmpCode + "¥";
         uploadPhoto = "PHOTO_UPLOAD" + "¥" + EmpCode;
-
-
         getPunch(base64Image);
     }
 
@@ -212,7 +233,7 @@ public class DbImageComparison extends BaseActivity implements NetWorkCheck.Netw
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK && requestCode == CAME_REQ && data != null) {
+        if (resultCode == RESULT_OK && requestCode == CAMERA_PERMISSION_CODE && data != null) {
             Bitmap camBitmap = null;
 
             try {

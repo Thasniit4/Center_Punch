@@ -43,6 +43,7 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.example.centerpunch.BaseMethod.BaseActivity;
 import com.example.centerpunch.BaseMethod.GpsTracker;
+import com.example.centerpunch.BaseMethod.SNTPClient;
 import com.example.centerpunch.Network.NetWorkCheck;
 import com.example.centerpunch.PhotoVerificationApi.PhotoVerificationRequest;
 import com.example.centerpunch.PhotoVerificationApi.PhotoVerificationResponse;
@@ -73,6 +74,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
@@ -80,7 +82,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkChangeListener {
-
+    String lastSelectedCenter = "";
+    boolean userHasInteracted = false;
     private NetWorkCheck netWorkCheck;
 
     private AlertDialog noInternetDialog;
@@ -166,45 +169,65 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         binding.linear3.setVisibility(View.GONE);
         getFDAList();
         getCenterList();
-        binding.CenterName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
+        binding.CenterName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedItem = parent.getItemAtPosition(position).toString();
-                if (selectedItem.equals("Select Center Name")) {
+
+                String newSelection = parent.getItemAtPosition(position).toString();
+
+                // Ignore callback if same center is selected repeatedly
+                if (newSelection.equals(lastSelectedCenter)) return;
+
+                // Update last selected center
+                lastSelectedCenter = newSelection;
+
+                if (newSelection.equals("Select Center Name")) {
+
+                    // Reset full UI
                     binding.imageView.setImageDrawable(null);
+                    binding.imageView.setVisibility(View.GONE);
+                    binding.ivSuccessTick.setVisibility(View.GONE);
+                    binding.tvSuccess.setVisibility(View.GONE);
+
                     base64Image = "";
-                    CenterId="";
-                    selectedCenterId="";
+                    selectedCenterId = "";
+                    CenterId = "";
+
                     binding.submit.setVisibility(View.GONE);
                     binding.linear2.setVisibility(View.GONE);
 
-                    //                } else if (selectedItem.isEmpty() || selectedItem.equals("")) {
-//                    NoDataAlert();
                 } else {
+
+                    // Clear previous verification results
                     binding.imageView.setImageDrawable(null);
+                    binding.imageView.setVisibility(View.GONE);
+                    binding.ivSuccessTick.setVisibility(View.GONE);
+                    binding.tvSuccess.setVisibility(View.GONE);
+
+                    base64Image = "";
+
+                    SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                    prefs.edit()
+                            .putBoolean("verifiedThisSession", false)
+                            .putBoolean("Verification Failed", false)
+                            .remove("capturedImage")
+                            .apply();
+
+                    // Enable UI for new center selection
                     binding.submit.setVisibility(View.VISIBLE);
-                    selectedCenterId = centerMap.get(selectedItem);
-                    Toast.makeText(MainActivity.this,"Center ID!" + selectedCenterId,Toast.LENGTH_SHORT).show();
-//                    LayoutInflater inflater = getLayoutInflater();
-//                    View layout = inflater.inflate(R.layout.custom_snackbar, null);
-//                    TextView text = layout.findViewById(R.id.toast_text);
-//                    text.setText("Center ID!" + selectedCenterId);
-//                    ImageView icon = layout.findViewById(R.id.toast_icon);
-//                    icon.setImageResource(R.drawable.tick); // Replace with your drawable
-//                    Toast toast = new Toast(getApplicationContext());
-//                    toast.setDuration(Toast.LENGTH_LONG);
-//                    toast.setView(layout);
-//                    toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-//                    toast.show();
-                  //  Toast.makeText(MainActivity.this, "Center ID: " + selectedCenterId , Toast.LENGTH_LONG).show();
-                    GetCenterLocation(selectedItem,selectedCenterId);
+                    binding.linear2.setVisibility(View.VISIBLE);
+
+                    selectedCenterId = centerMap.get(newSelection);
+
+                    GetCenterLocation(newSelection, selectedCenterId);
                 }
             }
+
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            public void onNothingSelected(AdapterView<?> parent) { }
         });
+
 //        binding.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 //            @Override
 //            public void onRefresh() {
@@ -252,29 +275,44 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
 
             }
         });
-        binding.submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        binding.submit.setOnClickListener(v -> {
 
-                DateFormat dfTime = new SimpleDateFormat("HH:mm");
-                time = dfTime.format(Calendar.getInstance().getTime());
-                try {
-                    Date CurrentTime = dfTime.parse(time);
-                    Date startTime = dfTime.parse("6:30");
-                    Date endTime = dfTime.parse("8:01");
-                    if (((CurrentTime.after(startTime)) || (CurrentTime.equals(startTime)))
-                            && (CurrentTime.before(endTime) || (CurrentTime.equals(startTime)))) {
-                        getLoc();
-                        uploadData();
-                    } else {
-                        TimeAlert();
+            SNTPClient.getDate(TimeZone.getTimeZone("Asia/Kolkata"), new SNTPClient.Listener() {
+                @Override
+                public void onTimeResponse(String rawDate, Date networkDate, Exception ex) {
+
+                    if (ex != null || networkDate == null) {
+                        Toast.makeText(MainActivity.this, "Unable to fetch accurate time", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                } catch (ParseException e) {
-                    e.printStackTrace();
+
+                    SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                    String formattedTime = dfTime.format(networkDate);
+                    Log.d("NetworkTime", "Time from SNTP: " + formattedTime);
+
+                    try {
+                        Date currentTime = dfTime.parse(formattedTime);
+                        Date startTime = dfTime.parse("06:30");
+                        Date endTime = dfTime.parse("07:30");
+
+                        if ((currentTime.equals(startTime) || currentTime.after(startTime)) &&
+                                (currentTime.equals(endTime) || currentTime.before(endTime))) {
+
+                            getLoc();
+                            uploadData();
+                        } else {
+                            TimeAlert();
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(MainActivity.this, "Time parsing failed", Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
+            });
+
         });
+
     }
     private void TimeAlert() {
         SweetAlertDialog sDialog = new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE);
@@ -282,7 +320,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         sDialog.setConfirmButtonBackgroundColor(R.color.lite_red);
         sDialog.setCustomImage(R.drawable.tick);
         sDialog.setContentText("Cancel");
-        sDialog.setContentText("punching is only permitted between 06:30 and 8:00.");
+        sDialog.setContentText("punching is only permitted between 06:30 and 7:30.");
         sDialog.setCancelable(false);
         sDialog.show();
     }
@@ -1000,8 +1038,15 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         photoVerificationRequest.setAdditionalChecks("true");
         photoVerificationRequest.setAllowCameraSwitch("true");
         photoVerificationRequest.setFaceMatchThreshold("0.8");
+        String imageURL = sharedPreferences.getString("IMAGE_URL", null);
         List<String> matchImages = new ArrayList<>();
-        matchImages.add("https://amfluat.asirvad.com/AssetManage/content/img/330011.jpg");
+        if (imageURL != null && !imageURL.isEmpty()) {
+            matchImages.add(imageURL);
+            Log.d("IMAGE_URL", "Loaded from SharedPreferences: " + imageURL);
+        } else {
+            Toast.makeText(this, "No image URL found!", Toast.LENGTH_SHORT).show();
+            Log.d("IMAGE_URL", "Image URL is empty or null");
+        }
         photoVerificationRequest.setMatchImage(matchImages);
         Call<PhotoVerificationResponse> call = RetrofitClientPhotoVerify.getInstance().getMyApi().photoVerification(photoVerificationRequest);
         call.enqueue(new Callback<PhotoVerificationResponse>() {
@@ -1093,11 +1138,11 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
     @Override
     protected void onResume() {
         super.onResume();
-
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         String savedImage = prefs.getString("capturedImage", null);
         boolean verifiedThisSession = prefs.getBoolean("verifiedThisSession", false);
-        boolean verificationFailed = prefs.getBoolean("verificationFailed", false);
+        boolean verificationFailed = prefs.getBoolean("Verification Failed", false);
+        String errorMessage = prefs.getString("verificationError", "Verification Failed!");
         if (verifiedThisSession && savedImage != null && !savedImage.isEmpty()) {
             Log.d("savedImage", "Loaded verified image in onResume: " + savedImage);
             binding.imageView.setVisibility(View.VISIBLE);

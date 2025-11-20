@@ -47,6 +47,7 @@ public class DashBoardActivity extends BaseActivity implements NetWorkCheck.Netw
         String imageURL = sharedPreferences.getString("IMAGE_URL", null);
 
         if (imageURL != null && !imageURL.isEmpty()) {
+            Log.d("IMAGE_URL","DashBoard Activity" +imageURL);
 
             Glide.with(this).load(imageURL)
                     .placeholder(R.drawable.profile)
@@ -54,6 +55,11 @@ public class DashBoardActivity extends BaseActivity implements NetWorkCheck.Netw
                     .circleCrop()
                     .into(binding.ivUser);
         }
+        else{
+            Log.d("IMAGE_URL", "No image URL found in SharedPreferences DashBoard");
+            binding.ivUser.setImageResource(R.drawable.profile);
+        }
+
 
         binding.btnCenter.setOnClickListener(new View.OnClickListener() {
 

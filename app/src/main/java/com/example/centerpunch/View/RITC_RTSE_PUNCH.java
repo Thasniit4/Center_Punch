@@ -559,8 +559,14 @@ public class RITC_RTSE_PUNCH extends BaseActivity implements NetWorkCheck.Networ
             showAlertDialog();
             return;
         }
+
+
+
         DateFormat dfTime = new SimpleDateFormat("HH:mm");
         time = dfTime.format(Calendar.getInstance().getTime());
+
+
+
         val = "RTSE_RITC"+"¥"+EmpCode+"¥"+selectedBranchId+"¥"+EmpName+"¥"+selectedItem+"¥"+GeoLat+"¥"+GeoLong+
                 "¥"+time+"¥"+lat2+"¥"+long2;
         sendToServer( base64Image);
