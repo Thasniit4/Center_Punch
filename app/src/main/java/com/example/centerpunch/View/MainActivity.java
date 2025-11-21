@@ -964,6 +964,10 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         }
 
         btnYes.setOnClickListener(v -> {
+            SharedPreferences sharedPreferences = getSharedPreferences("your_pref_name", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear();
+            editor.apply();
             LayoutInflater inflater = getLayoutInflater();
             View layout = inflater.inflate(R.layout.custom_snackbar, null);
             TextView text = layout.findViewById(R.id.toast_text);
