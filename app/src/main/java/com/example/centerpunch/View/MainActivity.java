@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ImageDecoder;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
@@ -36,11 +37,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.centerpunch.BaseMethod.BaseActivity;
 import com.example.centerpunch.BaseMethod.GpsTracker;
 import com.example.centerpunch.BaseMethod.SNTPClient;
@@ -65,6 +69,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -97,21 +104,20 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
     File file;
 
     PhotoVerificationResponse photoVerificationResponse;
-    String filePath,fileName;
+    String filePath, fileName,newSelection;
     ActivityMainBinding binding;
     LocationManager locationManager;
     private String selectedItem;
     PunchResponse punchResponse;
     List<String> CenterNames = new ArrayList<String>();
     HashMap<String, String> centerMap = new HashMap<>();
-    Float GeoLat, GeoLong,lat2,long2;
-    String Center, city,val,time,val1,CurrentLat,CurrentLong,BranchId,CenterId,Alert,CentId,selectedCenterId;
+    Float GeoLat, GeoLong, lat2, long2;
+    String Center, city, val, time, val1, CurrentLat, CurrentLong, BranchId, CenterId, Alert, CentId, selectedCenterId;
     private ArrayList<String> ListNames = new ArrayList<String>();
     private Handler sessionHandler;
     private Runnable sessionRunnable;
     private static final long SESSION_TIMEOUT = 5 * 60 * 1000;
     UploadResponse uploadResponse;
-
 
 
     @Override
@@ -153,7 +159,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     })
                     .show();
         }
-        String EmpName = sharedPreferences.getString("EmpName",null);
+        String EmpName = sharedPreferences.getString("EmpName", null);
         binding.tvEmpName.setText(EmpName);
         String imageURL = sharedPreferences.getString("IMAGE_URL", null);
 
@@ -165,8 +171,8 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     .circleCrop()
                     .into(binding.profileImg);
         }
-        binding.linear2.setVisibility(View.GONE);
-        binding.linear3.setVisibility(View.GONE);
+      //  binding.linear2.setVisibility(View.GONE);
+       // binding.linear3.setVisibility(View.GONE);
         getFDAList();
         getCenterList();
 
@@ -174,14 +180,13 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                String newSelection = parent.getItemAtPosition(position).toString();
+                 newSelection = parent.getItemAtPosition(position).toString();
 
                 // Ignore callback if same center is selected repeatedly
-                if (newSelection.equals(lastSelectedCenter)) return;
+                if (lastSelectedCenter != null && newSelection.equals(lastSelectedCenter)) return;
 
                 // Update last selected center
                 lastSelectedCenter = newSelection;
-
                 if (newSelection.equals("Select Center Name")) {
 
                     // Reset full UI
@@ -189,21 +194,24 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     binding.imageView.setVisibility(View.GONE);
                     binding.ivSuccessTick.setVisibility(View.GONE);
                     binding.tvSuccess.setVisibility(View.GONE);
-
+                    binding.photoVerify.setVisibility(View.GONE);
                     base64Image = "";
                     selectedCenterId = "";
                     CenterId = "";
 
                     binding.submit.setVisibility(View.GONE);
                     binding.linear2.setVisibility(View.GONE);
-
-                } else {
-
+                    Log.d("photoVerify","Photo Verify Button Not Visible");
+                }
+                else
+                {
                     // Clear previous verification results
                     binding.imageView.setImageDrawable(null);
                     binding.imageView.setVisibility(View.GONE);
                     binding.ivSuccessTick.setVisibility(View.GONE);
                     binding.tvSuccess.setVisibility(View.GONE);
+                    binding.photoVerify.setVisibility(View.VISIBLE);
+                    Log.d("photoVerify","Photo Verify Button Visible");
 
                     base64Image = "";
 
@@ -217,15 +225,14 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     // Enable UI for new center selection
                     binding.submit.setVisibility(View.VISIBLE);
                     binding.linear2.setVisibility(View.VISIBLE);
-
                     selectedCenterId = centerMap.get(newSelection);
-
                     GetCenterLocation(newSelection, selectedCenterId);
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
 //        binding.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -293,7 +300,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     try {
                         Date currentTime = dfTime.parse(formattedTime);
                         Date startTime = dfTime.parse("06:30");
-                        Date endTime = dfTime.parse("07:30");
+                        Date endTime = dfTime.parse("17:30");
 
                         if ((currentTime.equals(startTime) || currentTime.after(startTime)) &&
                                 (currentTime.equals(endTime) || currentTime.before(endTime))) {
@@ -314,6 +321,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         });
 
     }
+
     private void TimeAlert() {
         SweetAlertDialog sDialog = new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE);
         sDialog.setTitleText("Oops...");
@@ -324,6 +332,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         sDialog.setCancelable(false);
         sDialog.show();
     }
+
     private void getLoc() {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
@@ -404,38 +413,14 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
             Double meter = meterDistanceBetweenPoints(GeoLat, GeoLong, lat2, long2);
             if (meter > 100.0) {
                 binding.linear2.setVisibility(View.GONE);
-//                LayoutInflater inflater = getLayoutInflater();
-//                View layout = inflater.inflate(R.layout.custom_snackbar, null);
-//                TextView text = layout.findViewById(R.id.toast_text);
-//                text.setText("Outside of are" + selectedCenterId);
-//                ImageView icon = layout.findViewById(R.id.toast_icon);
-//                icon.setImageResource(R.drawable.tick); // Replace with your drawable
-//                Toast toast = new Toast(getApplicationContext());
-//                toast.setDuration(Toast.LENGTH_LONG);
-//                toast.setView(layout);
-//                toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-//                toast.show();
                 Toast.makeText(this, "outside of area", Toast.LENGTH_SHORT).show();
                 binding.linear3.setVisibility(View.GONE);
                 //    Toast.makeText(MainActivity.this, "getLocation: " + CurrentLat + "long" + CurrentLong, Toast.LENGTH_LONG).show();
                 CenterAlert();
             } else if (lat2 == 0.0 || long2 == 0.0) {
                 RequestForGpsPermission();
-//                LayoutInflater inflater = getLayoutInflater();
-//                View layout = inflater.inflate(R.layout.custom_snackbar, null);
-//                TextView text = layout.findViewById(R.id.toast_text);
-//                text.setText("Turn on Gps" + selectedCenterId);
-//                ImageView icon = layout.findViewById(R.id.toast_icon);
-//                icon.setImageResource(R.drawable.tick); // Replace with your drawable
-//                Toast toast = new Toast(getApplicationContext());
-//                toast.setDuration(Toast.LENGTH_LONG);
-//                toast.setView(layout);
-//                toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-//                toast.show();
                 Toast.makeText(this, "Turn on Gps", Toast.LENGTH_SHORT).show();
-            } else
-
-            {
+            } else {
                 //  binding.linear2.setVisibility(View.VISIBLE);
                 binding.linear3.setVisibility(View.VISIBLE);
                 binding.submit.setVisibility(View.GONE);
@@ -484,7 +469,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         showLoader("");
         PunchRequest punchRequest = new PunchRequest();
         punchRequest.setpFlag("LocationModAlert");
-        punchRequest.setEmpCode(EmpCode+"¥"+value);
+        punchRequest.setEmpCode(EmpCode + "¥" + value);
         Call<PunchResponse> call = RetrofitClient.getInstance().getMyApi().punch(punchRequest);
         call.enqueue(new Callback<PunchResponse>() {
             @SuppressLint("NotifyDataSetChanged")
@@ -493,11 +478,12 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                 punchResponse = response.body();
                 hideLoader();
                 if (punchResponse.getCenterpunchdata() != null && !punchResponse.getCenterpunchdata().isEmpty()) {
-                    Alert= punchResponse.getCenterpunchdata().get(0).getAlert();
+                    Alert = punchResponse.getCenterpunchdata().get(0).getAlert();
                     if ("2".equals(Alert)) {
                         navigateToChangeRequest();
                     } else {
-                        showAlertAlready();                    }
+                        showAlertAlready();
+                    }
                 } else {
                     Toast.makeText(MainActivity.this, "Invalid response from server", Toast.LENGTH_SHORT).show();
                     hideLoader();
@@ -511,6 +497,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
             }
         });
     }
+
     private void showAlertAlready() {
         SweetAlertDialog sDialog = new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE);
         sDialog.setTitleText("Oops...");
@@ -570,6 +557,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                             Toast.makeText(MainActivity.this, "Location permission denied.", Toast.LENGTH_SHORT).show();
                         }
                     }
+
                     @Override
                     public void onPermissionRationaleShouldBeShown
                             (List<PermissionRequest> permissions, PermissionToken token) {
@@ -630,7 +618,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     //   CenterNames.add("Select Center Name");
                     for (int i = 0; i < punchResponse.getCenterpunchdata().size(); i++) {
                         Center = String.valueOf(punchResponse.getCenterpunchdata().get(i).getCenteRNAME());
-                        CentId=String.valueOf(punchResponse.getCenterpunchdata().get(i).getCenteRID());
+                        CentId = String.valueOf(punchResponse.getCenterpunchdata().get(i).getCenteRID());
                         if (Center != null && !Center.isEmpty()) {
                             CenterNames.add(Center);
                             centerMap.put(Center, CentId);
@@ -645,6 +633,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     hideLoader();
                 }
             }
+
             @Override
             public void onFailure(Call<PunchResponse> call, Throwable t) {
                 cancelTimeout();
@@ -654,11 +643,11 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         });
     }
 
-    private void GetCenterLocation(String Center,String CentId) {
+    private void GetCenterLocation(String Center, String CentId) {
         showLoader("Getting center location please wait....");
         PunchRequest punchRequest = new PunchRequest();
         punchRequest.setpFlag("geo_loc");
-        punchRequest.setEmpCode(EmpCode + "¥" + Center+"¥"+CentId);
+        punchRequest.setEmpCode(EmpCode + "¥" + Center + "¥" + CentId);
         Call<PunchResponse> call = RetrofitClient.getInstance().getMyApi().punch(punchRequest);
         call.enqueue(new Callback<PunchResponse>() {
             @SuppressLint("NotifyDataSetChanged")
@@ -667,10 +656,10 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                 ListNames.clear();
                 punchResponse = response.body();
                 hideLoader();
-                if ( punchResponse.getCenterpunchdata() != null && !punchResponse.getCenterpunchdata().isEmpty()) {
+                if (punchResponse.getCenterpunchdata() != null && !punchResponse.getCenterpunchdata().isEmpty()) {
                     GeoLat = Float.parseFloat(punchResponse.getCenterpunchdata().get(0).getGeOLAT());
                     GeoLong = Float.parseFloat(punchResponse.getCenterpunchdata().get(0).getGeOLONG());
-                    CenterId=punchResponse.getCenterpunchdata().get(0).getCenteRID();
+                    CenterId = punchResponse.getCenterpunchdata().get(0).getCenteRID();
                     //   getAddressFromLatLng(GeoLat, GeoLong);
                     //  Toast.makeText(MainActivity.this, "CENTER" + GeoLat + "LONG" + GeoLong, Toast.LENGTH_SHORT).show();
                     getLoc();
@@ -680,6 +669,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     hideLoader();
                 }
             }
+
             @Override
             public void onFailure(Call<PunchResponse> call, Throwable t) {
                 hideLoader();
@@ -711,6 +701,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     hideLoader();
                 }
             }
+
             @Override
             public void onFailure(Call<PunchResponse> call, Throwable t) {
                 cancelTimeout();
@@ -834,6 +825,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         byte[] byteArray = byteArrayOutputStream.toByteArray();
         return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
     }
+
     private String encodeToBase64(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 95, byteArrayOutputStream);
@@ -869,9 +861,9 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         }
         DateFormat dfTime = new SimpleDateFormat("HH:mm");
         time = dfTime.format(Calendar.getInstance().getTime());
-        val = "PUNCH"+"¥"+binding.BranchName.getText()+"¥"+EmpName+"¥"+selectedItem+"¥"+GeoLat+"¥"+GeoLong+
-                "¥"+time+"¥"+lat2+"¥"+long2+"¥"+EmpCode+"¥"+CenterId;
-        val1="PUNCH_MAIN"+"¥"+EmpCode+"¥"+binding.BranchName.getText()+"¥"+time+"¥"+lat2+"¥"+long2;
+        val = "PUNCH" + "¥" + binding.BranchName.getText() + "¥" + EmpName + "¥" + newSelection + "¥" + GeoLat + "¥" + GeoLong +
+                "¥" + time + "¥" + lat2 + "¥" + long2 + "¥" + EmpCode + "¥" + CenterId;
+        val1 = "PUNCH_MAIN" + "¥" + EmpCode + "¥" + binding.BranchName.getText() + "¥" + time + "¥" + lat2 + "¥" + long2;
         //  Toast.makeText(MainActivity.this, ""+base64Image, Toast.LENGTH_SHORT).show();
         //  Log.e("Upload", ": " + base64Image);
         // sendToServer(val, base64Image);
@@ -886,28 +878,28 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                 .show();
     }
 
-    private void sendToServer(String imageBase64) {
-        showLoader("Saving images please wait ....");
-        UploadRequest uploadRequest = new UploadRequest();
-        uploadRequest.setpParameters(val);
-        uploadRequest.setImageByte(imageBase64);
-        Call<UploadResponse> call = RetrofitClient.getInstance().getMyApi().photoUpload(uploadRequest);
-        call.enqueue(new Callback<UploadResponse>() {
+    private void sendToServer() {
+      showLoader("Loading");
+        startTimeout(60000); // 1-minute timeout
+        PunchRequest punchRequest = new PunchRequest();
+        punchRequest.setpFlag("PUNCH");
+        punchRequest.setEmpCode(val);
+        Call<PunchResponse> call = RetrofitClient.getInstance().getMyApi().punch(punchRequest);
+        call.enqueue(new Callback<PunchResponse>() {
             @SuppressLint("NotifyDataSetChanged")
             @Override
-            public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
-                uploadResponse = response.body();
-                hideLoader();
-                if (response.isSuccessful() && response.body() != null) {
-                    String result = uploadResponse.getResult();
+            public void onResponse(Call<PunchResponse> call, Response<PunchResponse> response) {
+                cancelTimeout();
+                punchResponse = response.body();
+       hideLoader();
+                if (punchResponse.getCenterpunchdata() != null && !punchResponse.getCenterpunchdata().isEmpty()) {
+                    String result = punchResponse.getCenterpunchdata().get(0).getAlert();
                     if (result != null && result.equals("Successfully Uploaded")) {
-                        // getPunch(imageBase64);
                         showSuccessAlert();
 
-                    } else if(result != null && result.equals("Already punch detected")) {
+                    } else if (result != null && result.equals("Already punch detected")) {
                         Toast.makeText(MainActivity.this, "Already punch", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(MainActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
                     }
                 } else {
@@ -919,13 +911,57 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     Toast.makeText(MainActivity.this, "Upload failed!!", Toast.LENGTH_SHORT).show();
                 }
             }
+
             @Override
-            public void onFailure(Call<UploadResponse> call, Throwable t) {
+            public void onFailure(Call<PunchResponse> call, Throwable t) {
+                cancelTimeout();
                 hideLoader();
-                Log.e("Upload", "Error: " + t.getMessage());
+                onBackPressed();
             }
         });
+
     }
+
+//    private void sendToServer(String imageBase64) {
+//        showLoader("Saving images please wait ....");
+//        UploadRequest uploadRequest = new UploadRequest();
+//        uploadRequest.setpParameters(val);
+//        uploadRequest.setImageByte(imageBase64);
+//        Call<UploadResponse> call = RetrofitClient.getInstance().getMyApi().photoUpload(uploadRequest);
+//        call.enqueue(new Callback<UploadResponse>() {
+//            @SuppressLint("NotifyDataSetChanged")
+//            @Override
+//            public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
+//                uploadResponse = response.body();
+//                hideLoader();
+//                if (response.isSuccessful() && response.body() != null) {
+//                    String result = uploadResponse.getResult();
+//                    if (result != null && result.equals("Successfully Uploaded")) {
+//                        // getPunch(imageBase64);
+//                        showSuccessAlert();
+//
+//                    } else if (result != null && result.equals("Already punch detected")) {
+//                        Toast.makeText(MainActivity.this, "Already punch", Toast.LENGTH_SHORT).show();
+//                    } else {
+//                        Toast.makeText(MainActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
+//                    }
+//                } else {
+//                    try {
+//                        Log.e("Upload", "Server Error: " + response.errorBody().string());
+//                    } catch (IOException e) {
+//                        Log.e("Upload", "Error reading errorBody: " + e.getMessage());
+//                    }
+//                    Toast.makeText(MainActivity.this, "Upload failed!!", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<UploadResponse> call, Throwable t) {
+//                hideLoader();
+//                Log.e("Upload", "Error: " + t.getMessage());
+//            }
+//        });
+//    }
 
     private void showSuccessAlert() {
         SweetAlertDialog sDialog = new SweetAlertDialog(this, SweetAlertDialog.CUSTOM_IMAGE_TYPE);
@@ -964,24 +1000,22 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         }
 
         btnYes.setOnClickListener(v -> {
-            SharedPreferences sharedPreferences = getSharedPreferences("your_pref_name", MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.clear();
-            editor.apply();
+//            SharedPreferences sharedPreferences = getSharedPreferences("your_pref_name", MODE_PRIVATE);
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//            editor.clear();
+//            editor.apply();
             LayoutInflater inflater = getLayoutInflater();
             View layout = inflater.inflate(R.layout.custom_snackbar, null);
             TextView text = layout.findViewById(R.id.toast_text);
             text.setText("Logout Successfully!");
-
             ImageView icon = layout.findViewById(R.id.toast_icon);
-            icon.setImageResource(R.drawable.tick); // Replace with your drawable
-
+            icon.setImageResource(R.drawable.tick);
             Toast toast = new Toast(getApplicationContext());
             toast.setDuration(Toast.LENGTH_LONG);
             toast.setView(layout);
             toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
             toast.show();
-          //  Toast.makeText(MainActivity.this, "Logout successfully", Toast.LENGTH_SHORT).show();
+            //  Toast.makeText(MainActivity.this, "Logout successfully", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(MainActivity.this, LoginPage.class));
             finish();
             dialog.dismiss();
@@ -1011,12 +1045,11 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     String result = uploadResponse.getResult();
                     if (result != null && result.equals("Successfully Uploaded")) {
                         //  saveImageToRoom(imageBase64);
-                        sendToServer(imageBase64);
+                        sendToServer();
                         // showSuccessAlert();
-                    } else if(result != null && result.equals("Already punch detected")) {
+                    } else if (result != null && result.equals("Already punch detected")) {
                         Toast.makeText(MainActivity.this, "Already punch", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(MainActivity.this, "Upload failed!", Toast.LENGTH_SHORT).show();
                     }
                 } else {
@@ -1024,6 +1057,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                     Toast.makeText(MainActivity.this, "Upload failed!!", Toast.LENGTH_SHORT).show();
                 }
             }
+
             @Override
             public void onFailure(Call<UploadResponse> call, Throwable t) {
                 hideLoader();
@@ -1061,18 +1095,18 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
                 hideLoader();
                 if (response.isSuccessful() && response.body() != null) {
                     String getUrl = photoVerificationResponse.getVideoUrl();
-                    String getToken=photoVerificationResponse.getToken();
-                    String additionalCheck= photoVerificationResponse.getAdditionalChecks();
-                    String faceMatch= String.valueOf(photoVerificationResponse.getMatchImage());
-                    String flipCamera=photoVerificationResponse.getAllowCameraSwitch();
-                    Log.d("getURl","getURl got" +getUrl);
+                    String getToken = photoVerificationResponse.getToken();
+                    String additionalCheck = photoVerificationResponse.getAdditionalChecks();
+                    String faceMatch = String.valueOf(photoVerificationResponse.getMatchImage());
+                  //  String flipCamera = photoVerificationResponse.getAllowCameraSwitch();
+                    Log.d("getURl", "getURl got" + getUrl);
                     if (getUrl != null && !getUrl.isEmpty()) {
                         Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
                         intent.putExtra("videoUrl", getUrl);
-                        intent.putExtra("token",getToken);
-                        intent.putExtra("additionalCheck",additionalCheck);
-                        intent.putExtra("faceMatch",faceMatch);
-                        intent.putExtra("flipCamera",flipCamera);
+                        intent.putExtra("token", getToken);
+                        intent.putExtra("additionalCheck", additionalCheck);
+                        intent.putExtra("faceMatch", faceMatch);
+                      //  intent.putExtra("flipCamera", flipCamera);
                         //   verifyPhotoComplete(getToken);
                         startActivity(intent);
                         //  Toast.makeText(MainActivity.this, "Upload Success!", Toast.LENGTH_SHORT).show();
@@ -1139,6 +1173,8 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         noInternetDialog.show();
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -1149,6 +1185,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
         String errorMessage = prefs.getString("verificationError", "Verification Failed!");
         if (verifiedThisSession && savedImage != null && !savedImage.isEmpty()) {
             Log.d("savedImage", "Loaded verified image in onResume: " + savedImage);
+
             binding.imageView.setVisibility(View.VISIBLE);
             binding.submit.setVisibility(View.VISIBLE);
             binding.linear2.setVisibility(View.VISIBLE);
@@ -1158,8 +1195,26 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
             binding.ivSuccessTick.setVisibility(View.VISIBLE);
             binding.tvSuccess.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.light_green));
             binding.ivSuccessTick.setImageResource(R.drawable.tick);
-            Glide.with(MainActivity.this).load(savedImage).into(binding.imageView);
-        } else if (verificationFailed) {
+            Glide.with(MainActivity.this)
+                    .asBitmap()
+                    .load(savedImage)
+                    .into(new CustomTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+
+                            binding.imageView.setImageBitmap(resource);
+
+                            Bitmap compressed = compressBitmapBelow500KB(resource);
+                            base64Image = encodeToBase64(compressed);
+
+                            Log.d("Base64_From_URL", "Base64 created successfully");
+                        }
+
+                        @Override
+                        public void onLoadCleared(@Nullable Drawable placeholder) {}
+                    });
+        }
+        else if (verificationFailed) {
             // ❌ Verification failed — ask again
             binding.imageView.setVisibility(View.GONE);
             binding.submit.setVisibility(View.GONE);
@@ -1171,8 +1226,8 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
             binding.tvSuccess.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.red));
             binding.ivSuccessTick.setImageResource(R.drawable.error);
             Log.d("verification", "Verification failed — showing verify button again");
-
-        } else {
+        }
+        else {
             // 🧹 Fresh state — nothing verified yet
             binding.imageView.setVisibility(View.GONE);
             binding.submit.setVisibility(View.GONE);
@@ -1180,6 +1235,7 @@ public class MainActivity extends BaseActivity implements NetWorkCheck.NetworkCh
             binding.photoVerify.setVisibility(View.VISIBLE);
             binding.tvSuccess.setVisibility(View.GONE);
             binding.ivSuccessTick.setVisibility(View.GONE);
+            Log.d("photoVerify","Photo Verify Button Visible in else case");
         }
     }
 }

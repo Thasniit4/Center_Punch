@@ -2,6 +2,7 @@ package com.example.centerpunch.View;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -238,7 +239,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
 //                    return;
 //                }
                 if (punchResponse.getCenterpunchdata() != null && !punchResponse.getCenterpunchdata().isEmpty()) {
-                    Toast.makeText(LoginPage.this, "Logged Successfully.", Toast.LENGTH_LONG).show();
+                 //   Toast.makeText(LoginPage.this, "Logged Successfully.", Toast.LENGTH_LONG).show();
                     String Alert = punchResponse.getCenterpunchdata().get(0).getAlert();
                     String PostId = String.valueOf(punchResponse.getCenterpunchdata().get(0).getPosTID());
                     empcode = punchResponse.getCenterpunchdata().get(0).getEmPCODE();
@@ -253,7 +254,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                     if (Alert != null && Alert.equals("NOT")) {
                         Toast.makeText(LoginPage.this, "A new version of the application is available. Please update to the latest version for a better experience.", Toast.LENGTH_LONG).show();
                     } else if (PostId.equals("16") || PostId.equals("32")) {
-
+                    Toast.makeText(LoginPage.this,"Login Suceesfully", LENGTH_SHORT).show();
                       userPhotoExist();
                       //  GetDbData(userid);
 
@@ -263,7 +264,7 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                     } else {
                         assert Alert != null;
                         if (Alert.equals("NOTPUNCH")) {
-                            Toast.makeText(LoginPage.this, "Login is allowed only with your employee code. You can't log in on another device once logged in.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(LoginPage.this, "You are not authorised to login.....", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(LoginPage.this, "You are not authorised to login....", Toast.LENGTH_LONG).show();
                         }
@@ -403,19 +404,19 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
                     else {
                         Intent in = new Intent(LoginPage.this, DashBoardActivity.class);
                         startActivity(in);
-                        LayoutInflater inflater = getLayoutInflater();
-                        View layout = inflater.inflate(R.layout.custom_snackbar, null);
-                        TextView text = layout.findViewById(R.id.toast_text);
-                        text.setText("Logged Successfully!");
-
-                        ImageView icon = layout.findViewById(R.id.toast_icon);
-                        icon.setImageResource(R.drawable.tick); // Replace with your drawable
-
-                        Toast toast = new Toast(getApplicationContext());
-                        toast.setDuration(Toast.LENGTH_LONG);
-                        toast.setView(layout);
-                        toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
-                        toast.show();
+//                        LayoutInflater inflater = getLayoutInflater();
+//                        View layout = inflater.inflate(R.layout.custom_snackbar, null);
+//                        TextView text = layout.findViewById(R.id.toast_text);
+//                        text.setText("Logged Successfully!");
+//
+//                        ImageView icon = layout.findViewById(R.id.toast_icon);
+//                        icon.setImageResource(R.drawable.tick); // Replace with your drawable
+//
+//                        Toast toast = new Toast(getApplicationContext());
+//                        toast.setDuration(Toast.LENGTH_LONG);
+//                        toast.setView(layout);
+//                        toast.setGravity(Gravity.BOTTOM, 0, 100); // Optional: position of toast
+//                        toast.show();
                       //  Toast.makeText(LoginPage.this, "Login successfully", LENGTH_SHORT).show();
                     }
                 }
@@ -490,21 +491,17 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
     private void showExitAlert() {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.custom_exit_alert, null);
-
         Button btnYes = view.findViewById(R.id.btnYes);
         Button btnCancel = view.findViewById(R.id.btnCancel);
-
         builder.setView(view);
         android.app.AlertDialog dialog = builder.create();
-
         // Optional: make background transparent
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
-
         btnYes.setOnClickListener(v -> {
             LayoutInflater inflater = getLayoutInflater();
-            View layout = inflater.inflate(R.layout.custom_snackbar, null);
+            @SuppressLint("InflateParams") View layout = inflater.inflate(R.layout.custom_snackbar, null);
             TextView text = layout.findViewById(R.id.toast_text);
             text.setText("Application Closed!");
 
@@ -525,10 +522,6 @@ public class LoginPage extends BaseActivity implements NetWorkCheck.NetworkChang
 
         dialog.show();
     }
-
-
-
-
 
     @Override
     protected void onDestroy() {

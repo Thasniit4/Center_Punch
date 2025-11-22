@@ -40,7 +40,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.NetworkChangeListener {
-
+    private String base64Image = null;
     private static final int CAMERA_PERMISSION_CODE = 100;
     private ValueCallback<Uri[]> filePathCallback;
     private WebView webView;
@@ -71,7 +71,7 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
         if (!NetWorkCheck.isInternetAvailable()) {
             showNoInternetDialog();
         }
-        String backCamera = getIntent().getStringExtra("flipCamera");
+    //    String backCamera = getIntent().getStringExtra("flipCamera");
         String videoUrl = getIntent().getStringExtra("videoUrl");
         token = getIntent().getStringExtra("token");
         String faceMatch = getIntent().getStringExtra("faceMatch");
@@ -117,7 +117,6 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
 
                                 Log.d("WebViewText", "✅ Detected verification completion!");
                                 verificationTriggered = true;
-
                                 verifyPhotoComplete(token);
 
                             } else {
@@ -129,6 +128,8 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
             }
         }, 2000);
     }
+
+
 
 
     // ✅ Ask for camera permission
@@ -310,30 +311,36 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
         noInternetDialog.show();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        handler.removeCallbacksAndMessages(null); // Stop checking loop
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
 
-        if (webView != null) {
-            webView.onResume();
-            webView.reload(); // Force reload the page when returning
-        }
-    }
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        handler.removeCallbacksAndMessages(null); // Stop checking loop
+//    }
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//
+//
+//            if (webView != null) {
+//                webView.onResume();
+//                webView.reload();
+//                startCheckingForCompletion();
+//                // Force reload the page when returning
+//           }
+//    }
+
 
     @Override
     protected void onDestroy() {
-        if (webView != null) {
-            webView.loadUrl("about:blank");
-            webView.removeAllViews();
-            webView.destroy();
-            webView = null;
-        }
+//        if (webView != null) {
+//            webView.loadUrl("about:blank");
+//            webView.removeAllViews();
+//            webView.destroy();
+//            webView = null;
+//        }
         super.onDestroy();
         NetWorkCheck.setNetworkChangeListener(null);
         NetWorkCheck.unregisterNetworkCallback();
