@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -43,9 +44,12 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
     private String base64Image = null;
     private static final int CAMERA_PERMISSION_CODE = 100;
     private ValueCallback<Uri[]> filePathCallback;
+
+    private Uri cameraImageUri;
+    private static final int FILE_CHOOSER_REQUEST = 101;
     private WebView webView;
     private String token;
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean verificationTriggered = false;
     private AlertDialog noInternetDialog;
     private NetWorkCheck netWorkCheck;
@@ -55,7 +59,6 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
-
         webView = findViewById(R.id.webView);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -67,7 +70,6 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
         WebView.setWebContentsDebuggingEnabled(true);
         NetWorkCheck.setNetworkChangeListener(this);
         NetWorkCheck.registerNetworkCallback(this);
-
         if (!NetWorkCheck.isInternetAvailable()) {
             showNoInternetDialog();
         }
@@ -86,9 +88,7 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
                     }
                 });
             }
-
         });
-
         if (videoUrl != null) {
             webView.loadUrl(videoUrl);
 
@@ -103,20 +103,24 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
 
     }
 
+
+
     private void startCheckingForCompletion() {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (verificationTriggered) return; // stop once triggered
-
+          //      Log.d("verificationTriggered","verification first " +verificationTriggered);
                 webView.evaluateJavascript(
                         "(function() { return document.body.innerText; })();",
                         html -> {
                             Log.d("WebViewText", "Checking page text...");
+                            requestCameraPermission();
                             if (html.contains("Verification Completed") || html.contains("Verification Failed") || html.contains("Verification Successful")) {
 
                                 Log.d("WebViewText", "✅ Detected verification completion!");
                                 verificationTriggered = true;
+          //                      Log.d("verificationTriggered","verification second " +verificationTriggered);
                                 verifyPhotoComplete(token);
 
                             } else {
@@ -134,13 +138,8 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
 
     // ✅ Ask for camera permission
     private void requestCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.CAMERA},
-                    100
-            );
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 100);
         }
     }
 
@@ -152,6 +151,20 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
             Toast.makeText(this, "Camera permission denied", LENGTH_SHORT).show();
         }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CAMERA_PERMISSION_CODE && resultCode == RESULT_OK) {
+            if (filePathCallback != null && data != null) {
+                Uri result = data.getData();
+                filePathCallback.onReceiveValue(new Uri[]{result});
+                filePathCallback = null;
+            }
+        }
+    }
+
 
     // ✅ Call your second API automatically after failure detected
     private void verifyPhotoComplete(String token) {
@@ -279,13 +292,11 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
         });
 
     }
-
     @Override
     public void onNetworkLost() {
         Log.e("LoginPage", "Internet lost!");
         runOnUiThread(this::showNoInternetDialog);
     }
-
     private void showNoInternetDialog() {
         if (noInternetDialog != null && noInternetDialog.isShowing()) return;
 
@@ -310,46 +321,33 @@ public class WebViewActivity extends AppCompatActivity implements NetWorkCheck.N
 
         noInternetDialog.show();
     }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeCallbacksAndMessages(null); // Stop checking loop
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-
-
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        handler.removeCallbacksAndMessages(null); // Stop checking loop
-//    }
-
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//
-//
-//            if (webView != null) {
-//                webView.onResume();
-//                webView.reload();
-//                startCheckingForCompletion();
-//                // Force reload the page when returning
-//           }
-//    }
-
-
+        if (webView != null) {
+                webView.onResume();
+                webView.reload();
+                startCheckingForCompletion();
+                // Force reload the page when returning
+           }
+    }
     @Override
     protected void onDestroy() {
-//        if (webView != null) {
-//            webView.loadUrl("about:blank");
-//            webView.removeAllViews();
-//            webView.destroy();
-//            webView = null;
-//        }
+        if (webView != null) {
+            webView.loadUrl("about:blank");
+            webView.removeAllViews();
+            webView.destroy();
+            webView = null;
+        }
         super.onDestroy();
         NetWorkCheck.setNetworkChangeListener(null);
         NetWorkCheck.unregisterNetworkCallback();
     }
-
-
 }
-
-
-
-
 
